@@ -1,0 +1,2 @@
+public class Chip8 {
+}
