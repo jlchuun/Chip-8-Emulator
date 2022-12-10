@@ -8,6 +8,15 @@ public class Display extends JPanel {
     private int scale = 12;
     private Graphics2D display;
     public int[][] pixels = new int[WIDTH][HEIGHT];
+
+    public Display() {
+        JFrame frame = new JFrame("Chip-8 Emulator");
+        frame.setSize(400, 800);
+        frame.setLocationRelativeTo(null);
+        frame.add(this);
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
     @Override
     public void paint(Graphics g) {
         display = (Graphics2D) g;
@@ -34,11 +43,15 @@ public class Display extends JPanel {
         }
     }
 
+    public int getPixel(int x, int y) {
+        return pixels[x][y];
+    }
+
+    public void setPixel(int x, int y) {
+        pixels[x][y] ^= 1;
+    }
+
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Chip-8 Emulator");
-        frame.add(new Display());
-        frame.setSize(400, 800);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        new Display();
     }
 }
