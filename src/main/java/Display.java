@@ -16,6 +16,7 @@ public class Display extends JPanel {
         frame.add(this);
         frame.setVisible(true);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addKeyListener(new Keyboard());
     }
     @Override
     public void paint(Graphics g) {
@@ -52,6 +53,6 @@ public class Display extends JPanel {
     }
 
     public static void main(String[] args) {
-        new Display();
+        Display d = new Display();
     }
 }
