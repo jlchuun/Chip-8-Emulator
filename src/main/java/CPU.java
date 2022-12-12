@@ -1,9 +1,15 @@
-public class CPU {
-    final int RAM = 4096;
-    private int[] memory = new int[RAM];
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 
-    private int[] stack = new int[16];  // 16 registers for memory stack
-    private int sp = 0;                 // stack pointer
+public class CPU {
+    final static int START_ADDRESS = 0x200;
+    final static int RAM = 4096;
+    private int[] memory = new int[RAM];
+    private int pc;     // program counter
+    private int[] stack = new int[16];      // 16 registers for memory stack
+    private int sp = 0;     // stack pointer
 
     private int delayTimer;
     private int soundTimer;
@@ -31,6 +37,26 @@ public class CPU {
         for (int i = 0; i < FONT.length; i++) {
             memory[i] = FONT[i];
         }
+    }
+
+    private void loadROM(String filename) {
+        try {
+            File romFile = new File(filename);
+            byte[] romBytes = new byte[(int) romFile.length()];
+            FileInputStream romStream = new FileInputStream(romFile);
+            romStream.read(romBytes);
+            romStream.close();
+
+            for (int i = 0; i < romBytes.length; i++) {
+                memory[i + START_ADDRESS] = romBytes[i];
+            }
+
+        } catch (FileNotFoundException exc) {
+            exc.printStackTrace();
+        } catch (IOException exc) {
+            exc.printStackTrace();
+        }
+
     }
 
 }
