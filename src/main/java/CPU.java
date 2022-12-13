@@ -36,6 +36,10 @@ public class CPU {
             0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
 
+    public CPU() {
+        pc = START_ADDRESS;
+    }
+
     private void loadFont() {
         for (int i = 0; i < FONT.length; i++) {
             memory[i] = FONT[i];
@@ -101,11 +105,11 @@ public class CPU {
             case 0x5000:    // 5XY0: skip if VX == VY
                 return;
             case 0x6000:    // 6XNN: set VX = NN
-                vx = (opcode & 0x0F00);
-                memory[vx] = opcode & 0x00FF;
+                vx = (opcode & 0x0F00) >> 8;
+                memory[vx] = (opcode & 0x00FF);
                 return;
             case 0x7000:    // 7XNN: add NN to VX
-                vx = (opcode & 0x0F00);
+                vx = (opcode & 0x0F00) >> 8;
                 memory[vx] += (opcode & 0x00FF);
                 return;
             case 0x9000:    // 9XY0: skip if VX != VY
