@@ -11,7 +11,8 @@ public class CPU {
     private int pc;     // program counter
     private int[] stack = new int[16];      // 16 registers for memory stack
     private int sp = 0;     // stack pointer
-
+    private Display display;
+    private Keyboard keyboard;
     private int delayTimer;
     private int soundTimer;
 
@@ -59,6 +60,14 @@ public class CPU {
         }
     }
 
+    public void setKeyboard(Keyboard keyboard) {
+        this.keyboard = keyboard;
+    }
+
+    public void setDisplay(Display display) {
+        this.display = display;
+    }
+
     public int fetchOpcode() {
         int opcode = memory[pc] << 8 | memory[pc + 1];
         pc += 2;
@@ -68,6 +77,7 @@ public class CPU {
     public void decodeOpcode(int opcode) {
         switch (opcode) {
             case 0x00E0:    // 00E0: clear screen
+
                 return;
             case 0x00EE:    // 00EE: return from subroutine
                 return;
