@@ -11,6 +11,7 @@ public class CPU {
     private int pc;     // program counter
     private int[] stack = new int[16];      // 16 registers for memory stack
     private int sp = 0;     // stack pointer
+    private int index;      // index register
     private Display display;
     private Keyboard keyboard;
     private int delayTimer;
@@ -75,15 +76,18 @@ public class CPU {
     }
 
     public void decodeOpcode(int opcode) {
+        int vx;
+        int vy;
         switch (opcode) {
             case 0x00E0:    // 00E0: clear screen
-
+                display.clear();
                 return;
             case 0x00EE:    // 00EE: return from subroutine
                 return;
         }
         switch (opcode & 0xF000) {
             case 0x1000:    // 1NNN: jump to NNN
+                pc = opcode & 0x0FFF;
                 return;
             case 0x2000:    // 2NNN: calls subroutine at NNN
                 return;
@@ -94,18 +98,24 @@ public class CPU {
             case 0x5000:    // 5XY0: skip if VX == VY
                 return;
             case 0x6000:    // 6XNN: set VX = NN
+                vx = (opcode & 0x0F00);
+                memory[vx] = opcode & 0x00FF;
                 return;
             case 0x7000:    // 7XNN: add NN to VX
+                vx = (opcode & 0x0F00);
+                memory[vx] += (opcode & 0x00FF);
                 return;
             case 0x9000:    // 9XY0: skip if VX != VY
                 return;
             case 0xA000:    // ANNN: set index register to NNN
+                index = opcode & 0x0FFF;
                 return;
             case 0xB000:    // BNNN: jump with offset (v0 register)
                 return;
             case 0xC000:    // CXNN: VX = random number AND NN
                 return;
             case 0xD000:    // DXYN: display
+
                 return;
         }
         switch (opcode & 0xF00F) {
