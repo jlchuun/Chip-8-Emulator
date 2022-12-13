@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.random.*;
 
 public class CPU {
     final static int START_ADDRESS = 0x200;
@@ -39,7 +40,7 @@ public class CPU {
         }
     }
 
-    private void loadROM(String filename) {
+    public void loadROM(String filename) {
         try {
             File romFile = new File(filename);
             byte[] romBytes = new byte[(int) romFile.length()];
@@ -56,7 +57,12 @@ public class CPU {
         } catch (IOException exc) {
             exc.printStackTrace();
         }
+    }
 
+    public int fetchOpcode() {
+        int opcode = memory[pc] << 8 | memory[pc + 1];
+        pc += 2;
+        return opcode;
     }
 
 }
