@@ -78,6 +78,9 @@ public class CPU {
     public void decodeOpcode(int opcode) {
         int vx;
         int vy;
+        int x;
+        int y;
+        int n;
         switch (opcode) {
             case 0x00E0:    // 00E0: clear screen
                 display.clear();
@@ -115,7 +118,24 @@ public class CPU {
             case 0xC000:    // CXNN: VX = random number AND NN
                 return;
             case 0xD000:    // DXYN: display
+                vx = opcode & 0x0F00;
+                vy = opcode & 0x00F0;
+                x = memory[vx] & 63;
+                y = memory[vy] & 31;
+                memory[15] = 0;
+                n = opcode & 0x000F;
 
+                for (int row = 0; row < n; row++, y++) {
+                    int sprite = memory[index + row];
+                    for (int bit = 0; bit < 8; bit++, x++) {
+                        if (x < 64 && y < 32) {
+                            if (display.getPixel(x, y) == 1) {
+                                memory[15] = 1;
+                            }
+                            display.setPixel(x, y);
+                        }
+                    }
+                }
                 return;
         }
         switch (opcode & 0xF00F) {
