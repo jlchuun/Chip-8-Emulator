@@ -2,57 +2,67 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Display extends JPanel {
+    private Graphics g;
+    private final int scale = 15;
+    private final int WIDTH = 64;
+    private final int HEIGHT = 32;
 
-    private static final int WIDTH = 64;
-    private static final int HEIGHT = 32;
-    private int scale = 12;
-    private Graphics2D display;
-    public int[][] pixels = new int[WIDTH][HEIGHT];
+    private final int[][] pixels = new int[WIDTH][HEIGHT];
 
-    public Display() {
-        JFrame frame = new JFrame("Chip-8 Emulator");
-        frame.setSize(400, 800);
-        frame.setLocationRelativeTo(null);
-        frame.add(this);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.addKeyListener(new Keyboard());
+    public Dimension getPreferredSize() {
+        return new Dimension(WIDTH * scale, HEIGHT * scale);
     }
-    @Override
-    public void paint(Graphics g) {
-        display = (Graphics2D) g;
-        display.setColor(Color.BLACK);
-        display.fillRect(0, 0, 400, 800);
-    }
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        this.g = g;
 
-    public void clear() {
-        for (int x = 0; x < WIDTH; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
-                pixels[x][y] = 0;
-            }
-        }
+        g.setColor(Color.black);
+        g.fillRect(0, 0, WIDTH * scale, HEIGHT * scale);
+
         render();
     }
 
     public void render() {
-        for (int x = 0; x < WIDTH; x++) {
-            for (int y = 0; y < HEIGHT; y++) {
-                if (pixels[x][y] == 1) display.setColor(Color.BLACK);
-                else display.setColor(Color.WHITE);
-                display.fillRect(x * scale, y * scale, scale, scale);
+        for (int y = 0; y < HEIGHT; y++) {
+            for (int x = 0; x < WIDTH; x++) {
+                if (pixels[x][y] == 1)
+                    g.setColor(Color.WHITE);
+                else
+                    g.setColor(Color.BLACK);
+                g.fillRect(x * scale, y * scale, scale, scale);
             }
         }
     }
 
-    public int getPixel(int x, int y) {
-        return pixels[x][y];
+    public void rerender() {
+        repaint();
     }
 
     public void setPixel(int x, int y) {
         pixels[x][y] ^= 1;
     }
 
-    public static void main(String[] args) {
-        Display d = new Display();
+    public int getPixel(int x, int y) {
+        return pixels[x][y];
     }
+    public void clear() {
+        for (int x = 0; x < WIDTH; x++) {
+            for (int y = 0; y < HEIGHT; y++) {
+                pixels[x][y] = 0;
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        Display display = new Display();
+        JFrame frame = new JFrame("CHIP-8 EMULATOR");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.add(display);
+        frame.pack();
+        frame.setVisible(true);
+        for (int i = 0; i < 64 * 15; i++) {
+           display.setPixel(i, 16);
+        }
+    }
+
 }
