@@ -9,7 +9,7 @@ public class Chip8 {
     private int opcode;
 
     private int cpuFreq = 60;
-    private int period = 1000 / cpuFreq;
+    private int period = 100 / cpuFreq;
 
     public Chip8() {
         createGUI();

@@ -3,115 +3,123 @@ import java.lang.reflect.Field;
 
 public class Keyboard implements KeyListener {
     private boolean keyStates[] = new boolean[16];  // key states for 0-F
+
+    public Keyboard() {
+        for (int i = 0; i < keyStates.length; i++) {
+            keyStates[i] = false;
+        }
+    }
+
     public void keyTyped(KeyEvent e) {
         displayTest(e);
     }
+
 
     public boolean[] getKeyStates() {
         return keyStates;
     }
     public void keyPressed(KeyEvent e) {
         switch (e.getKeyChar()) {
-            case '1':
-                keyStates[0] = true;
-                return;
-            case '2':
+            case (int)'1':
                 keyStates[1] = true;
                 return;
-            case '3':
+            case (int)'2':
                 keyStates[2] = true;
                 return;
-            case '4':
+            case (int)'3':
                 keyStates[3] = true;
                 return;
-            case 'q':
+            case (int)'4':
+                keyStates[0xC] = true;
+                return;
+            case (int)'q':
                 keyStates[4] = true;
                 return;
-            case 'w':
+            case (int)'w':
                 keyStates[5] = true;
                 return;
-            case 'e':
+            case (int)'e':
                 keyStates[6] = true;
                 return;
-            case 'r':
+            case (int)'r':
+                keyStates[0xD] = true;
+                return;
+            case (int)'a':
                 keyStates[7] = true;
                 return;
-            case 'a':
+            case (int)'s':
                 keyStates[8] = true;
                 return;
-            case 's':
+            case (int)'d':
                 keyStates[9] = true;
                 return;
-            case 'd':
-                keyStates[10] = true;
+            case (int)'f':
+                keyStates[0xE] = true;
                 return;
-            case 'f':
-                keyStates[11] = true;
+            case (int)'z':
+                keyStates[0xA] = true;
                 return;
-            case 'z':
-                keyStates[12] = true;
+            case (int)'x':
+                keyStates[0] = true;
                 return;
-            case 'x':
-                keyStates[13] = true;
+            case (int)'c':
+                keyStates[0xB] = true;
                 return;
-            case 'c':
-                keyStates[14] = true;
-                return;
-            case 'v':
-                keyStates[15] = true;
+            case (int)'v':
+                keyStates[0xF] = true;
                 return;
         }
     }
 
     public void keyReleased(KeyEvent e) {
         switch (e.getKeyChar()) {
-            case '1':
-                keyStates[0] = false;
-                return;
-            case '2':
+            case (int)'1':
                 keyStates[1] = false;
                 return;
-            case '3':
+            case (int)'2':
                 keyStates[2] = false;
                 return;
-            case '4':
+            case (int)'3':
                 keyStates[3] = false;
                 return;
-            case 'q':
+            case (int)'4':
+                keyStates[0xC] = false;
+                return;
+            case (int)'q':
                 keyStates[4] = false;
                 return;
-            case 'w':
+            case (int)'w':
                 keyStates[5] = false;
                 return;
-            case 'e':
+            case (int)'e':
                 keyStates[6] = false;
                 return;
-            case 'r':
+            case (int)'r':
+                keyStates[0xD] = false;
+                return;
+            case (int)'a':
                 keyStates[7] = false;
                 return;
-            case 'a':
+            case (int)'s':
                 keyStates[8] = false;
                 return;
-            case 's':
+            case (int)'d':
                 keyStates[9] = false;
                 return;
-            case 'd':
-                keyStates[10] = false;
+            case (int)'f':
+                keyStates[0xE] = false;
                 return;
-            case 'f':
-                keyStates[11] = false;
+            case (int)'z':
+                keyStates[0xA] = false;
                 return;
-            case 'z':
-                keyStates[12] = false;
+            case (int)'x':
+                keyStates[0] = false;
                 return;
-            case 'x':
-                keyStates[13] = false;
+            case (int)'c':
+                keyStates[0xB] = false;
                 return;
-            case 'c':
-                keyStates[14] = false;
-                return;
-            case 'v':
-                keyStates[15] = false;
+            case (int)'v':
+                keyStates[0xF] = false;
                 return;
         }
     }

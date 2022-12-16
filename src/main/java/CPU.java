@@ -177,7 +177,7 @@ public class CPU {
                 pc = (opcode & 0x0FFF) + v[0];
                 return;
             case 0xC000:    // CXNN: VX = random number AND NN
-                vx = (opcode & 0xF000) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 v[vx] = ((new Random()).nextInt(256)) & (opcode & 0x00FF);
                 return;
             case 0xD000:    // DXYN: display
@@ -207,27 +207,27 @@ public class CPU {
         }
         switch (opcode & 0xF00F) {
             case 0x8000:    // 8XY0: VX = VY
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] = v[vy];
                 return;
             case 0x8001:    // 8XY1: VX = VX OR VY
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] = v[vx] | v[vy];
                 return;
             case 0x8002:    // 8XY2: VX = VX AND VY
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] = v[vx] & v[vy];
                 return;
             case 0x8003:    // 8XY3: VX = VX XOR VY
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] = v[vx] ^ v[vy];
                 return;
             case 0x8004:    // 8XY4: VX += VY
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] += v[vy];
                 if (v[vx] > 255) {
@@ -238,7 +238,7 @@ public class CPU {
                 v[vx] &= 0xFF;
                 return;
             case 0x8005:    // 8XY5: VX -= VY
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 if (v[vx] > v[vy]) {
                     v[15] = 1;
@@ -248,14 +248,14 @@ public class CPU {
                 v[vx] -= v[vy];
                 return;
             case 0x8006:    // 8XY6: shift right
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] = v[vy];
-                v[15] = (v[vx] & 0x1) == 1 ? 1 : 0;
+                v[15] = v[vx] & 0x1;
                 v[vx] >>>= 1;
                 return;
             case 0x8007:    // 8XY7: VX = VY - VX
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 if (v[vx] < v[vy]) {
                     v[15] = 1;
@@ -265,59 +265,60 @@ public class CPU {
                 v[vx] = v[vy] - v[vx];
                 return;
             case 0x800E:    // 8XYE: shift left
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] = v[vy];
-                v[15] = (v[vx] >>> 7) == 1 ? 1 : 0;
+                v[15] = v[vx] >>> 7;
                 v[vx] = (v[vx] << 0x1) & 0xFF;
                 return;
         }
         switch (opcode & 0XF0FF) {
             case 0xE09E:    // EX9E: skip if key press == VX
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 int key = v[vx];
-                if (key <= 0xF && keyboard.getKeyStates()[key]) {
+                if (keyboard.getKeyStates()[key]) {
                     pc += 2;
                 }
                 return;
             case 0xE0A1:    // EXA1: skip if key press != VX
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 key = v[vx];
-                if (key <= 0xF && !keyboard.getKeyStates()[key]) {
+                if (!keyboard.getKeyStates()[key]) {
                     pc += 2;
                 }
                 return;
             case 0XF007:    // FX07: VX = delay timer
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 v[vx] = delayTimer;
                 return;
             case 0XF015:    // FX15: delay timer = VX
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 delayTimer = v[vx];
                 return;
             case 0XF018:    // FX18: sound timer  = VX
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 soundTimer = v[vx];
                 return;
             case 0XF01E:    // FX1E: index register += VX
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 index += v[vx];
                 return;
             case 0XF00A:    // FX0A: blocks and waits for key press and released
-                vx = (opcode & 0x0F0F) >>> 8;
-                for (int i = 0; i < 0xF; i++) {
+                vx = (opcode & 0x0F00) >>> 8;
+                for (int i = 0; i < 16; i++) {
                     if (keyboard.getKeyStates()[i]) {
                         v[vx] = i;
                         return;
                     }
                 }
+                pc -= 2;
                 return;
             case 0XF029:    // FX29: index register = hexadecimal char in VX
-                vx = (opcode & 0x0F0F) >>> 8;
-                index = (v[vx] * 5) + 0x50;     // font start offset
+                vx = (opcode & 0x0F00) >>> 8;
+                index = (v[vx] * 5) + 0x050;     // font start offset
                 return;
             case 0XF033:    // FX33: binary-coded decimal conversion
-                vx = (opcode & 0x0F0F) >>> 8;
+                vx = (opcode & 0x0F00) >>> 8;
                 int temp = v[vx];
                 memory[index + 2] = temp % 10;
                 temp /= 10;
@@ -326,19 +327,15 @@ public class CPU {
                 memory[index] = temp % 10;
                 return;
             case 0XF055:    // FX55: store/load into memory
-                vx = (opcode & 0x0F0F) >>> 8;
-                temp = index;
-                for (int i = 0; i < vx; i++) {
-                    memory[temp] = v[i];
-                    temp++;
+                vx = (opcode & 0x0F00) >>> 8;
+                for (int i = 0; i <= vx; i++) {
+                    memory[index + i] = v[i];
                 }
                 return;
             case 0XF065:    // FX65: store/load memory into var registers
-                vx = (opcode & 0x0F0F) >>> 8;
-                temp = index;
-                for (int i = 0; i < vx; i++) {
-                    v[i] = memory[temp];
-                    temp++;
+                vx = (opcode & 0x0F00) >>> 8;
+                for (int i = 0; i <= vx; i++) {
+                    v[i] = memory[index + i];
                 }
                 return;
         }
