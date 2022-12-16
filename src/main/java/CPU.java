@@ -1,21 +1,20 @@
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.random.*;
+import java.io.*;
+import java.util.Random;
 
 public class CPU {
     final static int START_ADDRESS = 0x200;
     final static int RAM = 4096;
     private int[] memory = new int[RAM];
     private int pc;     // program counter
-    private int[] stack = new int[16];      // 16 registers for memory stack
+    private int[] v = new int[16];      // 16 v registers
+    private int[] stack = new int[16];
     private int sp = 0;     // stack pointer
     private int index;      // index register
     private Display display;
     private Keyboard keyboard;
     private int delayTimer;
     private int soundTimer;
+    private boolean drawFlag = false;
 
     private static final int[] FONT = {
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -36,13 +35,27 @@ public class CPU {
             0xF0, 0x80, 0xF0, 0x80, 0x80  // F
     };
 
-    public CPU() {
+    public CPU(Display display, Keyboard keyboard) {
         pc = START_ADDRESS;
+        this.display = display;
+        this.keyboard = keyboard;
+        for (int i = 0; i < memory.length; i++) {
+            memory[i] = 0;
+        }
+        for (int i = 0; i < stack.length; i++) {
+            stack[i] = 0;
+            v[i] = 0;
+        }
+        loadFont();
+        index = 0;
+        drawFlag = true;
+        delayTimer = 0;
+        soundTimer = 0;
     }
 
     private void loadFont() {
         for (int i = 0; i < FONT.length; i++) {
-            memory[i] = FONT[i];
+            memory[i + 0x050] = FONT[i];
         }
     }
 
@@ -50,12 +63,12 @@ public class CPU {
         try {
             File romFile = new File(filename);
             byte[] romBytes = new byte[(int) romFile.length()];
-            FileInputStream romStream = new FileInputStream(romFile);
+            DataInputStream romStream = new DataInputStream(new BufferedInputStream(new FileInputStream(romFile)));
             romStream.read(romBytes);
             romStream.close();
 
             for (int i = 0; i < romBytes.length; i++) {
-                memory[i + START_ADDRESS] = romBytes[i];
+                memory[i + START_ADDRESS] = romBytes[i] & 0xFF;
             }
 
         } catch (FileNotFoundException exc) {
@@ -65,31 +78,35 @@ public class CPU {
         }
     }
 
-    public void setKeyboard(Keyboard keyboard) {
-        this.keyboard = keyboard;
-    }
-
-    public void setDisplay(Display display) {
-        this.display = display;
-    }
-
     public int fetchOpcode() {
-        int opcode = memory[pc] << 8 | memory[pc + 1];
+        int opcode = (memory[pc] << 8) | (memory[pc + 1]);
         pc += 2;
         return opcode;
+    }
+
+    public boolean isDrawFlag() {
+        return drawFlag;
+    }
+
+    public void setDrawFlag(boolean drawFlag) {
+        this.drawFlag = drawFlag;
     }
 
     public void decodeOpcode(int opcode) {
         int vx;
         int vy;
-        int xCoord;
-        int yCoord;
+        int x;
+        int y;
         int height;
+        System.out.println(String.format("%04x", opcode));
         switch (opcode) {
             case 0x00E0:    // 00E0: clear screen
                 display.clear();
+                drawFlag = true;
                 return;
             case 0x00EE:    // 00EE: return from subroutine
+                sp--;
+                pc = stack[sp];
                 return;
         }
         switch (opcode & 0xF000) {
@@ -97,50 +114,83 @@ public class CPU {
                 pc = opcode & 0x0FFF;
                 return;
             case 0x2000:    // 2NNN: calls subroutine at NNN
+                stack[sp] = pc;
+                sp++;
+                pc = opcode & 0x0FFF;
                 return;
             case 0x3000:    // 3XNN: skip if VX == NN
+                vx = (opcode & 0x0F00) >>> 8;
+                if (v[vx] == (opcode & 0x00FF)) {
+                    pc += 2;
+                }
                 return;
             case 0x4000:    // 4XNN: skip if VX != NN
+                vx = (opcode & 0x0F00) >>> 8;
+                if (v[vx] != (opcode & 0x00FF)) {
+                    pc += 2;
+                }
                 return;
             case 0x5000:    // 5XY0: skip if VX == VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >>> 4;
+                if (v[vx] == v[vy]) {
+                    pc += 2;
+                }
                 return;
             case 0x6000:    // 6XNN: set VX = NN
-                vx = (opcode & 0x0F00) >> 8;
-                memory[vx] = (opcode & 0x00FF);
+                vx = (opcode & 0x0F00) >>> 8;
+                v[vx] = (opcode & 0x00FF);
                 return;
             case 0x7000:    // 7XNN: add NN to VX
-                vx = (opcode & 0x0F00) >> 8;
-                memory[vx] += (opcode & 0x00FF);
+                vx = (opcode & 0x0F00) >>> 8;
+                v[vx] += (opcode & 0x00FF);
+                if (v[vx] >= 256) {
+                    v[vx] -= 256;
+                }
                 return;
             case 0x9000:    // 9XY0: skip if VX != VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >>> 4;
+                if (v[vx] != v[vy]) {
+                    pc += 2;
+                }
                 return;
             case 0xA000:    // ANNN: set index register to NNN
                 index = opcode & 0x0FFF;
                 return;
             case 0xB000:    // BNNN: jump with offset (v0 register)
+                pc = (opcode & 0x0FFF) + v[0];
                 return;
             case 0xC000:    // CXNN: VX = random number AND NN
+                vx = (opcode & 0xF000) >>> 8;
+                v[vx] = ((new Random()).nextInt(256)) & (opcode & 0x00FF);
                 return;
             case 0xD000:    // DXYN: display
-                vx = (opcode & 0x0F00) >> 8;
-                vy = (opcode & 0x00F0) >> 4;
-                xCoord = memory[vx] & 63;
-                yCoord = memory[vy] & 31;
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >>> 4;
+                x = v[vx] % 64;
+                y = v[vy] % 32;
                 height = opcode & 0x000F;
-                memory[15] = 0;
+                v[15] = 0;
 
-                for (int row = 0; row < height; row++, yCoord++) {
+                for (int row = 0; row < height; row++) {
                     int spriteByte = memory[index + row];
-                    for (int col = 0; col < 8; col++, xCoord++) {
-                        int spritePixel = spriteByte & (0x80 >> col);
-                        if (spritePixel == 1) {
-                            if (display.getPixel(xCoord, yCoord) == 1) {
-                                memory[15] = 1;
+                    for (int col = 0; col < 8; col++) {
+
+                        if ((spriteByte & (0x80 >>> col)) != 0) {
+                            int xCoord = (x + col);
+                            int yCoord = (y + row);
+                            if (xCoord < 64 && yCoord < 32) {
+                                if (display.getPixel(xCoord, yCoord) == 1) {
+                                    v[15] = 1;
+                                }
+                                System.out.println(xCoord + ", " + yCoord);
+                                display.setPixel(xCoord, yCoord);
                             }
-                            display.setPixel(xCoord, yCoord);
                         }
                     }
                 }
+                drawFlag = true;
                 return;
         }
         switch (opcode & 0xF00F) {
