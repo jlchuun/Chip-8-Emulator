@@ -30,7 +30,6 @@ public class Chip8 {
     public void cycle() {
         long now;
         int refreshCycles = 0;
-        int i = 0;
         while (true) {
             now = System.currentTimeMillis();
 
@@ -44,10 +43,10 @@ public class Chip8 {
                     cpu.setDrawFlag(false);
                 }
                 if (delayTimer > 0) {
-                    delayTimer--;
+                    cpu.setDelayTimer(cpu.getDelayTimer() - 1);
                 }
                 if (soundTimer > 0) {
-                    soundTimer--;
+                    cpu.setSoundTimer(cpu.getSoundTimer() - 1);
                 }
             }
             refreshCycles++;
@@ -61,7 +60,6 @@ public class Chip8 {
                     e.printStackTrace();
                 }
             }
-            i++;
         }
 
     }
@@ -70,7 +68,7 @@ public class Chip8 {
     }
     public static void main(String[] args) {
         Chip8 chip8 = new Chip8();
-        chip8.loadRom("roms/IBM Logo.ch8");
+        chip8.loadRom("roms/chip8-test-suite.ch8");
         chip8.cycle();
     }
 }

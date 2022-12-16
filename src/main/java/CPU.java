@@ -78,6 +78,22 @@ public class CPU {
         }
     }
 
+    public int getDelayTimer() {
+        return delayTimer;
+    }
+
+    public int getSoundTimer() {
+        return soundTimer;
+    }
+
+    public void setDelayTimer(int delay) {
+        delayTimer = delay;
+    }
+
+    public void setSoundTimer(int sound) {
+        soundTimer = sound;
+    }
+
     public int fetchOpcode() {
         int opcode = (memory[pc] << 8) | (memory[pc + 1]);
         pc += 2;
@@ -175,17 +191,14 @@ public class CPU {
                 for (int row = 0; row < height; row++) {
                     int spriteByte = memory[index + row];
                     for (int col = 0; col < 8; col++) {
-
                         if ((spriteByte & (0x80 >>> col)) != 0) {
-                            int xCoord = (x + col);
-                            int yCoord = (y + row);
-                            if (xCoord < 64 && yCoord < 32) {
-                                if (display.getPixel(xCoord, yCoord) == 1) {
-                                    v[15] = 1;
-                                }
-                                System.out.println(xCoord + ", " + yCoord);
-                                display.setPixel(xCoord, yCoord);
+                            int xCoord = (x + col) % 64;
+                            int yCoord = (y + row) % 32;
+                            if (display.getPixel(xCoord, yCoord) == 1) {
+                                v[15] = 1;
                             }
+                            System.out.println(xCoord + ", " + yCoord);
+                            display.setPixel(xCoord, yCoord);
                         }
                     }
                 }
@@ -261,26 +274,72 @@ public class CPU {
         }
         switch (opcode & 0XF0FF) {
             case 0xE09E:    // EX9E: skip if key press == VX
+                vx = (opcode & 0x0F0F) >>> 8;
+                int key = v[vx];
+                if (key <= 0xF && keyboard.getKeyStates()[key]) {
+                    pc += 2;
+                }
                 return;
             case 0xE0A1:    // EXA1: skip if key press != VX
+                vx = (opcode & 0x0F0F) >>> 8;
+                key = v[vx];
+                if (key <= 0xF && !keyboard.getKeyStates()[key]) {
+                    pc += 2;
+                }
                 return;
             case 0XF007:    // FX07: VX = delay timer
+                vx = (opcode & 0x0F0F) >>> 8;
+                v[vx] = delayTimer;
                 return;
             case 0XF015:    // FX15: delay timer = VX
+                vx = (opcode & 0x0F0F) >>> 8;
+                delayTimer = v[vx];
                 return;
             case 0XF018:    // FX18: sound timer  = VX
+                vx = (opcode & 0x0F0F) >>> 8;
+                soundTimer = v[vx];
                 return;
             case 0XF01E:    // FX1E: index register += VX
+                vx = (opcode & 0x0F0F) >>> 8;
+                index += v[vx];
                 return;
             case 0XF00A:    // FX0A: blocks and waits for key press and released
+                vx = (opcode & 0x0F0F) >>> 8;
+                for (int i = 0; i < 0xF; i++) {
+                    if (keyboard.getKeyStates()[i]) {
+                        v[vx] = i;
+                        return;
+                    }
+                }
                 return;
             case 0XF029:    // FX29: index register = hexadecimal char in VX
+                vx = (opcode & 0x0F0F) >>> 8;
+                index = (v[vx] * 5) + 0x50;     // font start offset
                 return;
             case 0XF033:    // FX33: binary-coded decimal conversion
+                vx = (opcode & 0x0F0F) >>> 8;
+                int temp = v[vx];
+                memory[index + 2] = temp % 10;
+                temp /= 10;
+                memory[index + 1] = temp % 10;
+                temp /= 10;
+                memory[index] = temp % 10;
                 return;
             case 0XF055:    // FX55: store/load into memory
+                vx = (opcode & 0x0F0F) >>> 8;
+                temp = index;
+                for (int i = 0; i < vx; i++) {
+                    memory[temp] = v[i];
+                    temp++;
+                }
                 return;
             case 0XF065:    // FX65: store/load memory into var registers
+                vx = (opcode & 0x0F0F) >>> 8;
+                temp = index;
+                for (int i = 0; i < vx; i++) {
+                    v[i] = memory[temp];
+                    temp++;
+                }
                 return;
         }
 
