@@ -31,7 +31,7 @@ public class Chip8 {
         long now;
         int refreshCycles = 0;
         int i = 0;
-        while (i <= 64) {
+        while (true) {
             now = System.currentTimeMillis();
 
             opcode = cpu.fetchOpcode();

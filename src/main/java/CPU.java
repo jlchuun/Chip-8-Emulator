@@ -144,9 +144,8 @@ public class CPU {
             case 0x7000:    // 7XNN: add NN to VX
                 vx = (opcode & 0x0F00) >>> 8;
                 v[vx] += (opcode & 0x00FF);
-                if (v[vx] >= 256) {
-                    v[vx] -= 256;
-                }
+                v[vx] &= 0xFF;  // handle 8-bit overflow
+
                 return;
             case 0x9000:    // 9XY0: skip if VX != VY
                 vx = (opcode & 0x0F00) >>> 8;
@@ -195,22 +194,69 @@ public class CPU {
         }
         switch (opcode & 0xF00F) {
             case 0x8000:    // 8XY0: VX = VY
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vy];
                 return;
             case 0x8001:    // 8XY1: VX = VX OR VY
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vx] | v[vy];
                 return;
             case 0x8002:    // 8XY2: VX = VX AND VY
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vx] & v[vy];
                 return;
             case 0x8003:    // 8XY3: VX = VX XOR VY
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vx] ^ v[vy];
                 return;
             case 0x8004:    // 8XY4: VX += VY
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] += v[vy];
+                if (v[vx] > 255) {
+                    v[15] = 1;
+                } else {
+                    v[15] = 0;
+                }
+                v[vx] &= 0xFF;
                 return;
             case 0x8005:    // 8XY5: VX -= VY
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                if (v[vx] > v[vy]) {
+                    v[15] = 1;
+                } else {
+                    v[15] = 0;
+                }
+                v[vx] -= v[vy];
                 return;
             case 0x8006:    // 8XY6: shift right
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vy];
+                v[15] = (v[vx] & 0x1) == 1 ? 1 : 0;
+                v[vx] >>>= 1;
                 return;
             case 0x8007:    // 8XY7: VX = VY - VX
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                if (v[vx] < v[vy]) {
+                    v[15] = 1;
+                } else {
+                    v[15] = 0;
+                }
+                v[vx] = v[vy] - v[vx];
                 return;
             case 0x800E:    // 8XYE: shift left
+                vx = (opcode & 0x0F0F) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vy];
+                v[15] = (v[vx] >>> 7) == 1 ? 1 : 0;
+                v[vx] = (v[vx] << 0x1) & 0xFF;
                 return;
         }
         switch (opcode & 0XF0FF) {
