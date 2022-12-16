@@ -46,6 +46,7 @@ public class CPU {
             v[i] = 0;
         }
         loadFont();
+        index = 0;
         drawFlag = true;
         delayTimer = 0;
         soundTimer = 0;
@@ -93,10 +94,10 @@ public class CPU {
     public void decodeOpcode(int opcode) {
         int vx;
         int vy;
-        int xCoord;
-        int yCoord;
+        int x;
+        int y;
         int height;
-        System.out.println(String.format("%x", opcode));
+        System.out.println(String.format("%04x", opcode));
         switch (opcode) {
             case 0x00E0:    // 00E0: clear screen
                 display.clear();
@@ -119,11 +120,14 @@ public class CPU {
                 return;
             case 0x6000:    // 6XNN: set VX = NN
                 vx = (opcode & 0x0F00) >>> 8;
-                memory[vx] = (opcode & 0x00FF);
+                v[vx] = (opcode & 0x00FF);
                 return;
             case 0x7000:    // 7XNN: add NN to VX
                 vx = (opcode & 0x0F00) >>> 8;
-                memory[vx] += (opcode & 0x00FF);
+                v[vx] += (opcode & 0x00FF);
+                if (v[vx] >= 256) {
+                    v[vx] -= 256;
+                }
                 return;
             case 0x9000:    // 9XY0: skip if VX != VY
                 return;
@@ -137,27 +141,27 @@ public class CPU {
             case 0xD000:    // DXYN: display
                 vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >>> 4;
-                xCoord = memory[vx] % 64;
-                yCoord = memory[vy] % 32;
+                x = v[vx] % 64;
+                y = v[vy] % 32;
                 height = opcode & 0x000F;
-                memory[15] = 0;
+                v[15] = 0;
 
                 for (int row = 0; row < height; row++) {
                     int spriteByte = memory[index + row];
                     for (int col = 0; col < 8; col++) {
-                        int spritePixel = spriteByte & (0x80 >>> col);
-                        xCoord %= 64;
-                        yCoord %= 32;
-                        if (spritePixel == 1) {
-                            if (display.getPixel(xCoord, yCoord) == 1) {
-                                memory[15] = 1;
+
+                        if ((spriteByte & (0x80 >>> col)) != 0) {
+                            int xCoord = (x + col);
+                            int yCoord = (y + row);
+                            if (xCoord < 64 && yCoord < 32) {
+                                if (display.getPixel(xCoord, yCoord) == 1) {
+                                    v[15] = 1;
+                                }
+                                System.out.println(xCoord + ", " + yCoord);
+                                display.setPixel(xCoord, yCoord);
                             }
-                            System.out.println(xCoord + ", " + yCoord);
-                            display.setPixel(xCoord, yCoord);
                         }
-                        xCoord++;
                     }
-                    yCoord++;
                 }
                 drawFlag = true;
                 return;
