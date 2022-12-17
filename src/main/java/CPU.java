@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.Random;
 
 public class CPU {
     final static int START_ADDRESS = 0x200;
@@ -77,6 +78,22 @@ public class CPU {
         }
     }
 
+    public int getDelayTimer() {
+        return delayTimer;
+    }
+
+    public int getSoundTimer() {
+        return soundTimer;
+    }
+
+    public void setDelayTimer(int delay) {
+        delayTimer = delay;
+    }
+
+    public void setSoundTimer(int sound) {
+        soundTimer = sound;
+    }
+
     public int fetchOpcode() {
         int opcode = (memory[pc] << 8) | (memory[pc + 1]);
         pc += 2;
@@ -104,6 +121,8 @@ public class CPU {
                 drawFlag = true;
                 return;
             case 0x00EE:    // 00EE: return from subroutine
+                sp--;
+                pc = stack[sp];
                 return;
         }
         switch (opcode & 0xF000) {
@@ -111,12 +130,28 @@ public class CPU {
                 pc = opcode & 0x0FFF;
                 return;
             case 0x2000:    // 2NNN: calls subroutine at NNN
+                stack[sp] = pc;
+                sp++;
+                pc = opcode & 0x0FFF;
                 return;
             case 0x3000:    // 3XNN: skip if VX == NN
+                vx = (opcode & 0x0F00) >>> 8;
+                if (v[vx] == (opcode & 0x00FF)) {
+                    pc += 2;
+                }
                 return;
             case 0x4000:    // 4XNN: skip if VX != NN
+                vx = (opcode & 0x0F00) >>> 8;
+                if (v[vx] != (opcode & 0x00FF)) {
+                    pc += 2;
+                }
                 return;
             case 0x5000:    // 5XY0: skip if VX == VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >>> 4;
+                if (v[vx] == v[vy]) {
+                    pc += 2;
+                }
                 return;
             case 0x6000:    // 6XNN: set VX = NN
                 vx = (opcode & 0x0F00) >>> 8;
@@ -125,18 +160,25 @@ public class CPU {
             case 0x7000:    // 7XNN: add NN to VX
                 vx = (opcode & 0x0F00) >>> 8;
                 v[vx] += (opcode & 0x00FF);
-                if (v[vx] >= 256) {
-                    v[vx] -= 256;
-                }
+                v[vx] &= 0xFF;  // handle 8-bit overflow
+
                 return;
             case 0x9000:    // 9XY0: skip if VX != VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >>> 4;
+                if (v[vx] != v[vy]) {
+                    pc += 2;
+                }
                 return;
             case 0xA000:    // ANNN: set index register to NNN
                 index = opcode & 0x0FFF;
                 return;
             case 0xB000:    // BNNN: jump with offset (v0 register)
+                pc = (opcode & 0x0FFF) + v[0];
                 return;
             case 0xC000:    // CXNN: VX = random number AND NN
+                vx = (opcode & 0x0F00) >>> 8;
+                v[vx] = ((new Random()).nextInt(256)) & (opcode & 0x00FF);
                 return;
             case 0xD000:    // DXYN: display
                 vx = (opcode & 0x0F00) >>> 8;
@@ -149,17 +191,14 @@ public class CPU {
                 for (int row = 0; row < height; row++) {
                     int spriteByte = memory[index + row];
                     for (int col = 0; col < 8; col++) {
-
                         if ((spriteByte & (0x80 >>> col)) != 0) {
-                            int xCoord = (x + col);
-                            int yCoord = (y + row);
-                            if (xCoord < 64 && yCoord < 32) {
-                                if (display.getPixel(xCoord, yCoord) == 1) {
-                                    v[15] = 1;
-                                }
-                                System.out.println(xCoord + ", " + yCoord);
-                                display.setPixel(xCoord, yCoord);
+                            int xCoord = (x + col) % 64;
+                            int yCoord = (y + row) % 32;
+                            if (display.getPixel(xCoord, yCoord) == 1) {
+                                v[15] = 1;
                             }
+                            System.out.println(xCoord + ", " + yCoord);
+                            display.setPixel(xCoord, yCoord);
                         }
                     }
                 }
@@ -168,46 +207,137 @@ public class CPU {
         }
         switch (opcode & 0xF00F) {
             case 0x8000:    // 8XY0: VX = VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vy];
                 return;
             case 0x8001:    // 8XY1: VX = VX OR VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vx] | v[vy];
                 return;
             case 0x8002:    // 8XY2: VX = VX AND VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vx] & v[vy];
                 return;
             case 0x8003:    // 8XY3: VX = VX XOR VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vx] ^ v[vy];
                 return;
             case 0x8004:    // 8XY4: VX += VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] += v[vy];
+                if (v[vx] > 255) {
+                    v[15] = 1;
+                } else {
+                    v[15] = 0;
+                }
+                v[vx] &= 0xFF;
                 return;
             case 0x8005:    // 8XY5: VX -= VY
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                if (v[vx] > v[vy]) {
+                    v[15] = 1;
+                } else {
+                    v[15] = 0;
+                }
+                v[vx] -= v[vy];
                 return;
             case 0x8006:    // 8XY6: shift right
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vy];
+                v[15] = v[vx] & 0x1;
+                v[vx] >>>= 1;
                 return;
             case 0x8007:    // 8XY7: VX = VY - VX
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                if (v[vx] < v[vy]) {
+                    v[15] = 1;
+                } else {
+                    v[15] = 0;
+                }
+                v[vx] = v[vy] - v[vx];
                 return;
             case 0x800E:    // 8XYE: shift left
+                vx = (opcode & 0x0F00) >>> 8;
+                vy = (opcode & 0x00F0) >> 4;
+                v[vx] = v[vy];
+                v[15] = v[vx] >>> 7;
+                v[vx] = (v[vx] << 0x1) & 0xFF;
                 return;
         }
         switch (opcode & 0XF0FF) {
             case 0xE09E:    // EX9E: skip if key press == VX
+                vx = (opcode & 0x0F00) >>> 8;
+                int key = v[vx];
+                if (keyboard.getKeyStates()[key]) {
+                    pc += 2;
+                }
                 return;
             case 0xE0A1:    // EXA1: skip if key press != VX
+                vx = (opcode & 0x0F00) >>> 8;
+                key = v[vx];
+                if (!keyboard.getKeyStates()[key]) {
+                    pc += 2;
+                }
                 return;
             case 0XF007:    // FX07: VX = delay timer
+                vx = (opcode & 0x0F00) >>> 8;
+                v[vx] = delayTimer;
                 return;
             case 0XF015:    // FX15: delay timer = VX
+                vx = (opcode & 0x0F00) >>> 8;
+                delayTimer = v[vx];
                 return;
             case 0XF018:    // FX18: sound timer  = VX
+                vx = (opcode & 0x0F00) >>> 8;
+                soundTimer = v[vx];
                 return;
             case 0XF01E:    // FX1E: index register += VX
+                vx = (opcode & 0x0F00) >>> 8;
+                index += v[vx];
                 return;
             case 0XF00A:    // FX0A: blocks and waits for key press and released
+                vx = (opcode & 0x0F00) >>> 8;
+                for (int i = 0; i < 16; i++) {
+                    if (keyboard.getKeyStates()[i]) {
+                        v[vx] = i;
+                        return;
+                    }
+                }
+                pc -= 2;
                 return;
             case 0XF029:    // FX29: index register = hexadecimal char in VX
+                vx = (opcode & 0x0F00) >>> 8;
+                index = (v[vx] * 5) + 0x050;     // font start offset
                 return;
             case 0XF033:    // FX33: binary-coded decimal conversion
+                vx = (opcode & 0x0F00) >>> 8;
+                int temp = v[vx];
+                memory[index + 2] = temp % 10;
+                temp /= 10;
+                memory[index + 1] = temp % 10;
+                temp /= 10;
+                memory[index] = temp % 10;
                 return;
             case 0XF055:    // FX55: store/load into memory
+                vx = (opcode & 0x0F00) >>> 8;
+                for (int i = 0; i <= vx; i++) {
+                    memory[index + i] = v[i];
+                }
                 return;
             case 0XF065:    // FX65: store/load memory into var registers
+                vx = (opcode & 0x0F00) >>> 8;
+                for (int i = 0; i <= vx; i++) {
+                    v[i] = memory[index + i];
+                }
+                return;
         }
 
     }
