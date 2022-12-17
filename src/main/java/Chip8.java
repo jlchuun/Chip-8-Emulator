@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.io.File;
 
 public class Chip8 {
     private Keyboard keyboard;
@@ -7,6 +9,7 @@ public class Chip8 {
     private int delayTimer;
     private int soundTimer;
     private int opcode;
+    JFrame frame = new JFrame("CHIP-8 EMULATOR");
     private double updateRate = 1 / 60;
 
     public Chip8() {
@@ -17,11 +20,11 @@ public class Chip8 {
         keyboard = new Keyboard();
         display = new Display();
         cpu = new CPU(display, keyboard);
-        JFrame frame = new JFrame("CHIP-8 EMULATOR");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.add(display);
         frame.addKeyListener(keyboard);
         frame.pack();
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 
@@ -49,12 +52,19 @@ public class Chip8 {
         }
 
     }
-    public void loadRom(String filename) {
-        cpu.loadROM(filename);
+    public void loadRom() {
+        JFileChooser fileChooser = new JFileChooser("./roms");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Chip-8 ROM", "ch8");
+        fileChooser.setFileFilter(filter);
+        int option = fileChooser.showOpenDialog(frame);
+        if (option == JFileChooser.APPROVE_OPTION) {
+            cpu.loadROM("roms/" + fileChooser.getSelectedFile().getName());
+        }
+
     }
     public static void main(String[] args) {
         Chip8 chip8 = new Chip8();
-        chip8.loadRom("roms/chip8-test-suite.ch8");
+        chip8.loadRom();
         chip8.cycle();
     }
 }
