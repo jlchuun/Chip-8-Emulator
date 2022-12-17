@@ -7,9 +7,7 @@ public class Chip8 {
     private int delayTimer;
     private int soundTimer;
     private int opcode;
-
-    private int cpuFreq = 60;
-    private int period = 1000 / cpuFreq;
+    private double updateRate = 1 / 60;
 
     public Chip8() {
         createGUI();
@@ -28,40 +26,26 @@ public class Chip8 {
     }
 
     public void cycle() {
-        long now;
-        int refreshCycles = 0;
-        int i = 0;
-        while (i <= 64) {
-            now = System.currentTimeMillis();
-
-            opcode = cpu.fetchOpcode();
-            cpu.decodeOpcode(opcode);
-
-            if (refreshCycles % (cpuFreq / 60) == 0) {
-                refreshCycles = 0;
+        double accumulator = 0;
+        long currentTime, lastUpdate = System.currentTimeMillis();
+        while (true) {
+            currentTime = System.currentTimeMillis();
+            accumulator += (currentTime - lastUpdate) / 1000;
+            while (accumulator > updateRate) {
+                opcode = cpu.fetchOpcode();
+                cpu.decodeOpcode(opcode);
                 if (cpu.isDrawFlag()) {
                     display.rerender();
                     cpu.setDrawFlag(false);
                 }
                 if (delayTimer > 0) {
-                    delayTimer--;
+                    cpu.setDelayTimer(cpu.getDelayTimer() - 1);
                 }
                 if (soundTimer > 0) {
-                    soundTimer--;
+                    cpu.setSoundTimer(cpu.getSoundTimer() - 1);
                 }
+                accumulator -= updateRate;
             }
-            refreshCycles++;
-
-            long diff = System.currentTimeMillis() - now;
-            while (diff < period) {
-                try {
-                    diff = System.currentTimeMillis() - now;
-                    Thread.sleep(0);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            i++;
         }
 
     }
@@ -70,7 +54,7 @@ public class Chip8 {
     }
     public static void main(String[] args) {
         Chip8 chip8 = new Chip8();
-        chip8.loadRom("roms/IBM Logo.ch8");
+        chip8.loadRom("roms/chip8-test-suite.ch8");
         chip8.cycle();
     }
 }
