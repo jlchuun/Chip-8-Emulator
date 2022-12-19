@@ -114,7 +114,7 @@ public class CPU {
         int x;
         int y;
         int height;
-        System.out.println(String.format("%04x", opcode));
+//        System.out.println(String.format("%04x", opcode));
         switch (opcode) {
             case 0x00E0:    // 00E0: clear screen
                 display.clear();
@@ -197,7 +197,6 @@ public class CPU {
                             if (display.getPixel(xCoord, yCoord) == 1) {
                                 v[15] = 1;
                             }
-                            System.out.println(xCoord + ", " + yCoord);
                             display.setPixel(xCoord, yCoord);
                         }
                     }
@@ -239,37 +238,38 @@ public class CPU {
                 return;
             case 0x8005:    // 8XY5: VX -= VY
                 vx = (opcode & 0x0F00) >>> 8;
-                vy = (opcode & 0x00F0) >> 4;
-                if (v[vx] > v[vy]) {
-                    v[15] = 1;
-                } else {
+                vy = (opcode & 0x00F0) >>> 4;
+                v[vx] = (v[vx] - v[vy]) & 0xFF;
+                if (v[vy] > v[vx]) {
                     v[15] = 0;
+                } else {
+                    v[15] = 1;
                 }
-                v[vx] -= v[vy];
                 return;
             case 0x8006:    // 8XY6: shift right
                 vx = (opcode & 0x0F00) >>> 8;
-                vy = (opcode & 0x00F0) >> 4;
+                vy = (opcode & 0x00F0) >>> 4;
+                int temp = v[vx];
                 v[vx] = v[vy];
-                v[15] = v[vx] & 0x1;
-                v[vx] >>>= 1;
+                v[vx] >>= 1;
+                v[15] = temp & 0x1;
                 return;
             case 0x8007:    // 8XY7: VX = VY - VX
                 vx = (opcode & 0x0F00) >>> 8;
-                vy = (opcode & 0x00F0) >> 4;
-                if (v[vx] < v[vy]) {
+                vy = (opcode & 0x00F0) >>> 4;
+                v[vx] = (v[vy] - v[vx]) & 0xFF;
+                if (v[vy] > v[vx]) {
                     v[15] = 1;
                 } else {
                     v[15] = 0;
                 }
-                v[vx] = v[vy] - v[vx];
                 return;
             case 0x800E:    // 8XYE: shift left
                 vx = (opcode & 0x0F00) >>> 8;
                 vy = (opcode & 0x00F0) >> 4;
                 v[vx] = v[vy];
-                v[15] = v[vx] >>> 7;
                 v[vx] = (v[vx] << 0x1) & 0xFF;
+                v[15] = v[vx] >>> 7;
                 return;
         }
         switch (opcode & 0XF0FF) {

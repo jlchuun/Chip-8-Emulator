@@ -1,16 +1,18 @@
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
+import java.io.PrintStream;
+import java.util.List;
 
 public class Chip8 {
     private Keyboard keyboard;
     private Display display;
     private CPU cpu;
-    private int delayTimer;
-    private int soundTimer;
     private int opcode;
     JFrame frame = new JFrame("CHIP-8 EMULATOR");
-    private double updateRate = 1 / 60;
+    private double updateRate = 1000000000 / 600d;
 
     public Chip8() {
         createGUI();
@@ -21,7 +23,7 @@ public class Chip8 {
         display = new Display();
         cpu = new CPU(display, keyboard);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(display);
+        frame.add(display, BorderLayout.WEST);
         frame.addKeyListener(keyboard);
         frame.pack();
         frame.setLocationRelativeTo(null);
@@ -29,26 +31,36 @@ public class Chip8 {
     }
 
     public void cycle() {
+        int fps = 0;
         double accumulator = 0;
-        long currentTime, lastUpdate = System.currentTimeMillis();
+        long timer = 0;
+        long currentTime, lastUpdate = System.nanoTime();
         while (true) {
-            currentTime = System.currentTimeMillis();
-            accumulator += (currentTime - lastUpdate) / 1000;
-            while (accumulator > updateRate) {
+            currentTime = System.nanoTime();
+            accumulator += (currentTime - lastUpdate) / updateRate;
+            timer += (currentTime - lastUpdate);
+            lastUpdate = currentTime;
+            while (accumulator >= 1) {
                 opcode = cpu.fetchOpcode();
+                fps++;
                 cpu.decodeOpcode(opcode);
                 if (cpu.isDrawFlag()) {
                     display.rerender();
                     cpu.setDrawFlag(false);
                 }
-                if (delayTimer > 0) {
+                if (cpu.getDelayTimer() > 0) {
                     cpu.setDelayTimer(cpu.getDelayTimer() - 1);
                 }
-                if (soundTimer > 0) {
+                if (cpu.getSoundTimer() > 0) {
                     cpu.setSoundTimer(cpu.getSoundTimer() - 1);
                 }
-                accumulator -= updateRate;
+                accumulator--;
             }
+            if (timer >= 1000000000) {
+                System.out.println(String.format("FPS: %d", fps));
+                fps = 0;
+            }
+
         }
 
     }
@@ -59,6 +71,10 @@ public class Chip8 {
         int option = fileChooser.showOpenDialog(frame);
         if (option == JFileChooser.APPROVE_OPTION) {
             cpu.loadROM("roms/" + fileChooser.getSelectedFile().getName());
+        } else {
+            System.exit(0);
+            frame.setVisible(false);
+            frame.dispose();
         }
 
     }
