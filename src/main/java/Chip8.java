@@ -1,18 +1,15 @@
 import javax.swing.*;
-import javax.swing.border.Border;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.io.File;
-import java.io.PrintStream;
-import java.util.List;
+
 
 public class Chip8 {
     private Keyboard keyboard;
     private Display display;
     private CPU cpu;
     private int opcode;
+    private int updateRate = 600;   // updates per second
     JFrame frame = new JFrame("CHIP-8 EMULATOR");
-    private double updateRate = 1000000000 / 600d;
 
     public Chip8() {
         createGUI();
@@ -31,12 +28,10 @@ public class Chip8 {
     }
 
     public void cycle() {
-        int fps = 0;
         long lastTime = System.nanoTime();
-        double nsRate = 1000000000d / 500;
-
+        double nsRate = 1000000000d / updateRate;
         double delta = 0;
-        long lastTimer = System.currentTimeMillis();
+
         while (true) {
             long currentTime = System.nanoTime();
             delta += (currentTime - lastTime) / nsRate;
@@ -58,17 +53,14 @@ public class Chip8 {
             }
             if (cpu.isDrawFlag()) {
                 display.rerender();
-                fps++;
                 cpu.setDrawFlag(false);
             }
-            if (System.currentTimeMillis() - lastTimer >= 1000) {
-                lastTimer += 1000;
-                System.out.println(String.format("FPS: %d", fps));
-                fps = 0;
-            }
-
         }
 
+    }
+
+    public void setUpdateRate() {
+        updateRate = Integer.parseInt(JOptionPane.showInputDialog("Enter update ticks per sec"));
     }
     public void loadRom() {
         JFileChooser fileChooser = new JFileChooser("./roms");
@@ -82,11 +74,11 @@ public class Chip8 {
             frame.setVisible(false);
             frame.dispose();
         }
-
     }
     public static void main(String[] args) {
         Chip8 chip8 = new Chip8();
         chip8.loadRom();
+        chip8.setUpdateRate();
         chip8.cycle();
     }
 }
