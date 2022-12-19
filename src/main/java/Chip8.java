@@ -32,31 +32,37 @@ public class Chip8 {
 
     public void cycle() {
         int fps = 0;
-        double accumulator = 0;
-        long timer = 0;
-        long currentTime, lastUpdate = System.nanoTime();
+        long lastTime = System.nanoTime();
+        double nsRate = 1000000000d / 500;
+
+        double delta = 0;
+        long lastTimer = System.currentTimeMillis();
         while (true) {
-            currentTime = System.nanoTime();
-            accumulator += (currentTime - lastUpdate) / updateRate;
-            timer += (currentTime - lastUpdate);
-            lastUpdate = currentTime;
-            while (accumulator >= 1) {
+            long currentTime = System.nanoTime();
+            delta += (currentTime - lastTime) / nsRate;
+            lastTime = currentTime;
+            while (delta >= 1) {
                 opcode = cpu.fetchOpcode();
-                fps++;
                 cpu.decodeOpcode(opcode);
-                if (cpu.isDrawFlag()) {
-                    display.rerender();
-                    cpu.setDrawFlag(false);
-                }
+                delta -= 1;
+
                 if (cpu.getDelayTimer() > 0) {
                     cpu.setDelayTimer(cpu.getDelayTimer() - 1);
                 }
                 if (cpu.getSoundTimer() > 0) {
+                    if (cpu.getSoundTimer() == 1) {
+                        System.out.println("BEEEP");
+                    }
                     cpu.setSoundTimer(cpu.getSoundTimer() - 1);
                 }
-                accumulator--;
             }
-            if (timer >= 1000000000) {
+            if (cpu.isDrawFlag()) {
+                display.rerender();
+                fps++;
+                cpu.setDrawFlag(false);
+            }
+            if (System.currentTimeMillis() - lastTimer >= 1000) {
+                lastTimer += 1000;
                 System.out.println(String.format("FPS: %d", fps));
                 fps = 0;
             }
