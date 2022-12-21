@@ -3,6 +3,7 @@ import org.junit.jupiter.api.Test;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 public class CPUTest {
@@ -147,13 +148,93 @@ public class CPUTest {
     public void addTest() {
         int temp = 0xab;
         cpu.getRegisters()[1] = 0xab;
-        
+
         cpu.decodeOpcode(0x7112);
         assertEquals(temp + 0x12, cpu.getRegisters()[1]);
     }
 
     @Test
+    /*
+        8xy1 or
+        8xy2 and
+        8xy3 xor
+        8xy4 add
+        8xy5, 8xy7 subtract
+        8xy6, 8xye shift
+     */
     public void logicTest() {   // 8000 logical/arithmetic instructions
+        int temp1 = 0xab;
+        int temp2 = 0x0f;
+        cpu.getRegisters()[1] = temp1;
+        cpu.getRegisters()[2] = temp2;
+
+        // 8xy1 or
+        cpu.decodeOpcode(0x8121);
+        assertEquals(temp1 | temp2, cpu.getRegisters()[1]);
+        temp1 = cpu.getRegisters()[1];
+
+        // 8xy2 and
+        cpu.decodeOpcode(0x8122);
+        assertEquals(temp1 & temp2, cpu.getRegisters()[1]);
+        temp1 = cpu.getRegisters()[1];
+
+        // 8xy3 xor
+        cpu.decodeOpcode(0x8123);
+        assertEquals(temp1 ^ temp2, cpu.getRegisters()[1]);
+        temp1 = cpu.getRegisters()[1];
+
+        // 8xy4 add no overflow
+        cpu.decodeOpcode(0x8124);
+        assertEquals(temp1 + temp2, cpu.getRegisters()[1]);
+        assertTrue(cpu.getRegisters()[15] == 0);
+        temp1 = cpu.getRegisters()[1];
+
+
+        // 8xy4 add with overflow
+        temp1 = 0xff;
+        temp2 = 0xf1;
+        cpu.getRegisters()[1] = temp1;
+        cpu.getRegisters()[2] = temp2;
+        cpu.decodeOpcode(0x8124);
+        assertEquals((temp1 + temp2) & 0xff, cpu.getRegisters()[1]);
+        assertTrue(cpu.getRegisters()[15] == 1);
+
+        // 8xy5 subtract no underflow
+        temp1 = 0xff;
+        temp2 = 0x02;
+        cpu.getRegisters()[1] = temp1;
+        cpu.getRegisters()[2] = temp2;
+        cpu.decodeOpcode(0x8125);
+        temp1  = (temp1 - temp2) & 0xff;
+        assertEquals(temp1, cpu.getRegisters()[1]);
+        assertTrue(cpu.getRegisters()[15] == 1);
+
+        // 8xy5 subtract with underflow
+        temp1 = 0x02;
+        temp2 = 0xff;
+        cpu.getRegisters()[1] = temp1;
+        cpu.getRegisters()[2] = temp2;
+        cpu.decodeOpcode(0x8125);
+        temp1  = (temp1 - temp2) & 0xff;
+        assertEquals(temp1, cpu.getRegisters()[1]);
+        assertTrue(cpu.getRegisters()[15] == 0);
+
+        // 8xy6 shift right
+        temp1 = 0xff;
+        temp2 = 0xf8;
+        cpu.getRegisters()[1] = temp1;
+        cpu.getRegisters()[2] = temp2;
+        cpu.decodeOpcode(0x8126);
+        assertEquals(temp2 >> 1, cpu.getRegisters()[1]);
+
+        // 8xye shift left
+        temp1 = 0xff;
+        temp2 = 0xf8;
+        cpu.getRegisters()[1] = temp1;
+        cpu.getRegisters()[2] = temp2;
+        cpu.decodeOpcode(0x812e);
+        temp1 = (temp2 << 1) & 0xff;
+        assertEquals(temp1, cpu.getRegisters()[1]);
 
     }
 
