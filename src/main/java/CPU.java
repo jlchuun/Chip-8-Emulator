@@ -90,8 +90,20 @@ public class CPU {
         return sp;
     }
 
+    public int[] getStack() {
+        return stack;
+    }
+
+    public void setPc(int pc) {
+        this.pc = pc;
+    }
+
     public int getPc() {
         return pc;
+    }
+
+    public int[] getRegisters() {
+        return v;
     }
 
     public int getDelayTimer() {
