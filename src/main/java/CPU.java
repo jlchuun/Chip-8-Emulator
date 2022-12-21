@@ -78,6 +78,14 @@ public class CPU {
         }
     }
 
+    public Display getDisplay() {
+        return display;
+    }
+
+    public Keyboard getKeyboard() {
+        return keyboard;
+    }
+
     public int getDelayTimer() {
         return delayTimer;
     }
