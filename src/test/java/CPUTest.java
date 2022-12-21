@@ -143,9 +143,13 @@ public class CPUTest {
 
     }
 
-    @Test
+    @Test // 7xnn add
     public void addTest() {
-
+        int temp = 0xab;
+        cpu.getRegisters()[1] = 0xab;
+        
+        cpu.decodeOpcode(0x7112);
+        assertEquals(temp + 0x12, cpu.getRegisters()[1]);
     }
 
     @Test
