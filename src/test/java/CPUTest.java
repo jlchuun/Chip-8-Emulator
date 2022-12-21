@@ -238,9 +238,19 @@ public class CPUTest {
 
     }
 
-    @Test
+    @Test   // 1nnn, bnnn jumps
     public void jumpTest() {
+        int temp = 0x555;
 
+        // 1nnn jump
+        cpu.decodeOpcode(0x1555);
+        assertEquals(temp, cpu.getPc());
+
+        // bnnn jump with offset
+        cpu.getRegisters()[0] = 0x100;
+        temp = 0x555 + cpu.getRegisters()[0];
+        cpu.decodeOpcode(0xb555);
+        assertEquals(temp, cpu.getPc());
     }
 
     @Test
