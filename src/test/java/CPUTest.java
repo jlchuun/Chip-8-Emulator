@@ -125,8 +125,21 @@ public class CPUTest {
         testPc = cpu.getPc();
     }
 
-    @Test
+    @Test   // 8xy0, annn set instruction
     public void setTest() {
+        cpu.getRegisters()[1] = 0xab;
+        cpu.getRegisters()[2] = 0x0f;
+        assumeTrue(cpu.getRegisters()[1] != cpu.getRegisters()[2]);
+
+        // 8xy0 set vx = vy
+        cpu.decodeOpcode(0x8120);
+        assertEquals(cpu.getRegisters()[1], cpu.getRegisters()[2]);
+
+        // annn set index register
+        assumeTrue(cpu.getIndex() == 0);
+        cpu.decodeOpcode(0xa114);
+        assertEquals(0x114, cpu.getIndex());
+
 
     }
 
@@ -137,11 +150,6 @@ public class CPUTest {
 
     @Test
     public void logicTest() {   // 8000 logical/arithmetic instructions
-
-    }
-
-    @Test
-    public void setIndexTest() {
 
     }
 

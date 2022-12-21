@@ -102,6 +102,10 @@ public class CPU {
         return pc;
     }
 
+    public int getIndex() {
+        return index;
+    }
+
     public int[] getRegisters() {
         return v;
     }
