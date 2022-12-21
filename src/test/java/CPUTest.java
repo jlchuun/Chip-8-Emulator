@@ -40,9 +40,17 @@ public class CPUTest {
         }
     }
 
-    @Test
+    @Test   // 2nnn and 00ee call subroutine and return
     public void subroutineTest() {
+        assumeTrue(cpu.getPc() == 0x200);
+        assumeTrue(cpu.getSp() == 0);
+        cpu.decodeOpcode(0x2123);
+        assertEquals(cpu.getPc(), 0x123);
+        assertEquals(cpu.getSp(), 1);
 
+        cpu.decodeOpcode(0x00ee);
+        assertEquals(cpu.getPc(), 0x200);
+        assertEquals(cpu.getSp(), 0);
     }
 
     @Test

@@ -86,6 +86,14 @@ public class CPU {
         return keyboard;
     }
 
+    public int getSp() {
+        return sp;
+    }
+
+    public int getPc() {
+        return pc;
+    }
+
     public int getDelayTimer() {
         return delayTimer;
     }
