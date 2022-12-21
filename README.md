@@ -29,7 +29,7 @@ Any included .ch8 ROMs should be placed in /roms folder.
 
 Update ticks per second will vary per ROM for optimal usage.
 
- ![](C:\Users\jlchu\Desktop\testSuiteEx.gif)
+ ![](testSuiteEx.gif)
 
 ## Credits
 
