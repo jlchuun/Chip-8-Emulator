@@ -2,6 +2,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import java.util.Random;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -255,7 +257,15 @@ public class CPUTest {
 
     @Test
     public void randomTest() {
-
+        Random testRandom = new Random(2);
+        cpu.setRandom(testRandom);
+        int temp = 0x55;
+        cpu.getRegisters()[2] = 0x0f;
+        temp = testRandom.nextInt(256) & temp;
+        testRandom = new Random(2);
+        cpu.setRandom(testRandom);
+        cpu.decodeOpcode(0xc255);
+        assertEquals(temp, cpu.getRegisters()[2]);
     }
 
     @Test

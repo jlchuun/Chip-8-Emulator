@@ -15,6 +15,7 @@ public class CPU {
     private int delayTimer;
     private int soundTimer;
     private boolean drawFlag = false;
+    private Random random;
 
     private static final int[] FONT = {
             0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -51,6 +52,7 @@ public class CPU {
         drawFlag = true;
         delayTimer = 0;
         soundTimer = 0;
+        setRandom(new Random());
     }
 
     private void loadFont() {
@@ -108,6 +110,10 @@ public class CPU {
 
     public int[] getRegisters() {
         return v;
+    }
+
+    public void setRandom(Random random) {
+        this.random = random;
     }
 
     public int getDelayTimer() {
@@ -210,7 +216,7 @@ public class CPU {
                 return;
             case 0xC000:    // CXNN: VX = random number AND NN
                 vx = (opcode & 0x0F00) >>> 8;
-                v[vx] = ((new Random()).nextInt(256)) & (opcode & 0x00FF);
+                v[vx] = (random.nextInt(256)) & (opcode & 0x00FF);
                 return;
             case 0xD000:    // DXYN: display
                 vx = (opcode & 0x0F00) >>> 8;
