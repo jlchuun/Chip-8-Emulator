@@ -80,6 +80,9 @@ public class CPU {
         }
     }
 
+    public int[] getMemory() {
+        return memory;
+    }
     public Display getDisplay() {
         return display;
     }

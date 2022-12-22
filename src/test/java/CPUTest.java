@@ -270,7 +270,30 @@ public class CPUTest {
 
     @Test
     public void displayTest() {
+        for (int row = 0; row < HEIGHT; row++) {
+            for (int col = 0; col < WIDTH; col++) {
+                assumeTrue(cpu.getDisplay().getPixel(col, row) == 0);
+            }
+        }
+        cpu.decodeOpcode(0xa500);   // set index to 0x500
+        // set sprite data bits all to 0xff
+        for (int i = 0; i < 8; i++) {
+            cpu.getMemory()[i + 0x500] = 0xff;
+        }
+        cpu.getRegisters()[1] = 0;
+        cpu.getRegisters()[2] = 0;
 
+        cpu.decodeOpcode(0xd125);
+        for (int col = 0; col < 8; col++) {
+            for (int row = 0; row < 5; row++) {
+                assertTrue(cpu.getDisplay().getPixel(col, row) == 1);
+            }
+        }
+        for (int row = 6; row < HEIGHT; row++) {
+            for (int col = 9; col < WIDTH; col++) {
+                assertTrue(cpu.getDisplay().getPixel(col, row) == 0);
+            }
+        }
     }
 
     @Test
