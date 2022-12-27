@@ -24,13 +24,6 @@ was able to learn how the CPU interacts with memory, the display, and the keyboa
 
 ## Usage
 
-
-
-<style>
-    span {
-        font-weight: normal;
-    }
-</style>
 #### Chip-8 Keyboard Layout
 | <span>1</span> | <span>2</span> | <span>3</span> | <span>c</span> |
 |----------------|----------------|----------------|----------------|
