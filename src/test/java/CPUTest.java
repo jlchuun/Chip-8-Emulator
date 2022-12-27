@@ -361,9 +361,23 @@ public class CPUTest {
         assertEquals(testIndex, cpu.getIndex());
     }
 
-    @Test
+    @Test   // fx0a wait for key press
     public void getKeyTest() {
+        int testPc = cpu.getPc();
+        for (int i = 0; i < 16; i++) {
+            assumeTrue(cpu.getKeyboard().getKeyStates()[i] == false);
+        }
 
+        cpu.getKeyboard().getKeyStates()[0xa] = true;
+        cpu.setPc(testPc + 2);
+        cpu.decodeOpcode(0xf20a);
+        assertEquals(testPc + 2, cpu.getPc());
+        assertEquals(0xa, cpu.getRegisters()[2]);
+
+        cpu.getKeyboard().getKeyStates()[0xa] = false;
+        cpu.setPc(testPc + 2);
+        cpu.decodeOpcode(0xf20a);
+        assertEquals(testPc, cpu.getPc());
     }
 
     @Test
