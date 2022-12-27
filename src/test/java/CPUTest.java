@@ -380,9 +380,18 @@ public class CPUTest {
         assertEquals(testPc, cpu.getPc());
     }
 
-    @Test
+    @Test   // fx29 index register set to address of character
+    //  F character: 0xF0, 0x80, 0xF0, 0x80, 0x80
     public void fontCharTest() {
-
+        int testIndex = 0x50 + 0xf * 5;    // test index set to start of 'F' character
+        assumeTrue(cpu.getMemory()[testIndex] ==  0xf0);
+        assumeTrue(cpu.getMemory()[testIndex + 1] ==  0x80);
+        assumeTrue(cpu.getMemory()[testIndex + 2] ==  0xf0);
+        assumeTrue(cpu.getMemory()[testIndex + 3] ==  0x80);
+        assumeTrue(cpu.getMemory()[testIndex + 4] ==  0x80);
+        cpu.getRegisters()[2] = 0xf;
+        cpu.decodeOpcode(0xf229);
+        assertEquals(testIndex, cpu.getIndex());
     }
 
     @Test
