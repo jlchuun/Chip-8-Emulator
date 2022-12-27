@@ -349,9 +349,16 @@ public class CPUTest {
         assertEquals(cpu.getRegisters()[0xf], cpu.getSoundTimer());
     }
 
-    @Test
+    @Test   // fx1e add to index
     public void addToIndexTest() {
-
+        // set index register
+        int testIndex = 0x144;
+        cpu.getRegisters()[4] = 0x22;
+        cpu.decodeOpcode(0xa144);
+        assumeTrue(cpu.getIndex() == 0x144);
+        testIndex += cpu.getRegisters()[4];
+        cpu.decodeOpcode(0xf41e);
+        assertEquals(testIndex, cpu.getIndex());
     }
 
     @Test
