@@ -13,24 +13,9 @@ Chip-8 is one of the most common starter projects for beginning emulator develop
 with intentions to have a better understanding of how emulators are built as I move on to building more complex 
 systems.
 
-### Lessons Learned
-
-Many concepts that I haven't used in a practical application were used while developing this project, such
-as bitwise operations and game loops. Majority of the debugging was spent learning to 
-correctly set the display's pixels from the display instruction and sprites in memory. Although this project
-isn't a perfectly accurate interpreter since it does not feature working audio or consistent timers, I 
-was able to learn how the CPU interacts with memory, the display, and the keyboard to make a functional system.
-
 
 ## Usage
 
-
-
-<style>
-    span {
-        font-weight: normal;
-    }
-</style>
 #### Chip-8 Keyboard Layout
 | <span>1</span> | <span>2</span> | <span>3</span> | <span>c</span> |
 |----------------|----------------|----------------|----------------|
@@ -45,19 +30,24 @@ was able to learn how the CPU interacts with memory, the display, and the keyboa
 | a              | s              | d              | f              |
 | z              | x              | c              | v              |
 
-### In Chip-8-Emulator directory run:
 
-```mvn clean dependency:copy-dependencies package```
+#### IBM Logo
+![](images/ibm.gif)
 
-### To run tests independently:
+#### Chip-8 Test Suite
+![](images/testSuiteEx.gif)
 
-```mvn test```
+#### Tetris
+![](images/tetris.gif)
+
+
+## Getting Started
 
 ### For running emulator
 
 Navigate to Chip8.java file in /main/src and run 'main()'.
 
-### For testing display/keyboard: 
+### For testing display/keyboard:
 
 Run the included 'Chip-8 Test Suite' ROM.
 
@@ -66,10 +56,26 @@ Update ticks per second will vary per ROM for optimal usage.
 
 ### Recommended update rates:
 - Chip-8 Test Suite: 600
-- Tetris [Fran Dachille, 1991]: 400
+- Tetris [Fran Dachille, 1991]: 400 - 600
 - IBM Logo: 600
 
- ![](images/testSuiteEx.gif)
+
+## Installation
+
+### Maven
+- If running from command line/terminal follow instructions here:
+  - [https://maven.apache.org/install.html](https://maven.apache.org/install.html)
+- From intellij
+    - Open pom.xml from /Chip-8-Emulator as project.
+
+### In Chip-8-Emulator directory run:
+
+```mvn clean dependency:copy-dependencies package```
+
+### To run tests independently:
+
+```mvn test```
+
 
 ## Credits
 
