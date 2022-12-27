@@ -394,9 +394,15 @@ public class CPUTest {
         assertEquals(testIndex, cpu.getIndex());
     }
 
-    @Test
+    @Test   // fx33 binary-coded number conversion
     public void conversionTest() {
+        cpu.decodeOpcode(0xa100);   // set index register to 0x100
+        cpu.getRegisters()[5] = 321;
+        cpu.decodeOpcode(0xf533);
 
+        assertEquals(cpu.getMemory()[cpu.getIndex()], 3);
+        assertEquals(cpu.getMemory()[cpu.getIndex() + 1], 2);
+        assertEquals(cpu.getMemory()[cpu.getIndex() + 2], 1);
     }
 
     @Test
