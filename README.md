@@ -7,7 +7,7 @@ and consistent 60hZ timers.
 
 ## About Project
 
-![img_1.png](img_1.png)
+![img_1.png](images/img_1.png)
 
 Chip-8 is one of the most common starter projects for beginning emulator development. This project was built
 with intentions to have a better understanding of how emulators are built as I move on to building more complex 
@@ -29,7 +29,7 @@ Any included .ch8 ROMs should be placed in /roms folder.
 
 Update ticks per second will vary per ROM for optimal usage.
 
- ![](testSuiteEx.gif)
+ ![](images/testSuiteEx.gif)
 
 ## Credits
 
