@@ -268,7 +268,7 @@ public class CPUTest {
         assertEquals(temp, cpu.getRegisters()[2]);
     }
 
-    @Test
+    @Test   // dxyn display
     public void displayTest() {
         for (int row = 0; row < HEIGHT; row++) {
             for (int col = 0; col < WIDTH; col++) {
@@ -296,9 +296,37 @@ public class CPUTest {
         }
     }
 
-    @Test
+    @Test   // ex9e, exa1 skip if key pressed/not pressed
     public void skipIfTest() {
+        cpu.getKeyboard().getKeyStates()[1] = true;     // set '1' to pressed
+        cpu.getRegisters()[0] = 1;
+        int tempPc = cpu.getPc();
 
+        // ex9e skip success
+        cpu.setPc(tempPc + 2);
+        tempPc = cpu.getPc();
+        cpu.decodeOpcode(0xe09e);
+        assertEquals(tempPc + 2, cpu.getPc());
+
+        tempPc = cpu.getPc();
+        // ex9e skip fail
+        cpu.setPc(tempPc + 2);
+        tempPc = cpu.getPc();
+        cpu.decodeOpcode(0xef9e);
+        assertEquals(tempPc, cpu.getPc());
+
+        tempPc = cpu.getPc();
+        // exa1 skip success
+        cpu.setPc(tempPc + 2);
+        tempPc = cpu.getPc();
+        cpu.decodeOpcode(0xefa1);
+        assertEquals(tempPc + 2, cpu.getPc());
+
+        // exa1 skip fail
+        cpu.setPc(tempPc + 2);
+        tempPc = cpu.getPc();
+        cpu.decodeOpcode(0xe0a1);
+        assertEquals(tempPc, cpu.getPc());
     }
 
     @Test
