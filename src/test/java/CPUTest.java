@@ -329,9 +329,24 @@ public class CPUTest {
         assertEquals(tempPc, cpu.getPc());
     }
 
-    @Test
+    @Test   // fx07, fx15, fx18 set timers
     public void timersTest() {
+        cpu.setDelayTimer(10);
+        assumeTrue(cpu.getDelayTimer() != cpu.getRegisters()[5]);
 
+        // fx07 set register to delay timer
+        cpu.decodeOpcode(0xf507);
+        assertEquals(cpu.getDelayTimer(), cpu.getRegisters()[5]);
+
+        // fx15 set delay timer to register
+        cpu.getRegisters()[5] = 12;
+        cpu.decodeOpcode(0xf515);
+        assertEquals(cpu.getRegisters()[5], cpu.getDelayTimer());
+
+        // fx18 set sound timer to register
+        cpu.getRegisters()[0xf] = 2;
+        cpu.decodeOpcode(0xff18);
+        assertEquals(cpu.getRegisters()[0xf], cpu.getSoundTimer());
     }
 
     @Test
