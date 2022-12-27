@@ -405,8 +405,26 @@ public class CPUTest {
         assertEquals(cpu.getMemory()[cpu.getIndex() + 2], 1);
     }
 
-    @Test
+    @Test   // fx55 store, fx65 load memory/registers
     public void storeLoadTest() {
+        for (int i = 0; i < 16; i++) {
+            cpu.getRegisters()[i] = i + 2;
+            assumeTrue(cpu.getMemory()[cpu.getIndex() + i] != cpu.getRegisters()[i]);
+        }
 
+        // fx55 store registers to memory
+        cpu.decodeOpcode(0xff55);
+        for (int i = 0; i < 16; i++) {
+            assertEquals(cpu.getMemory()[cpu.getIndex() + i], cpu.getRegisters()[i]);
+        }
+
+        // fx66 store memory to registers
+        for (int i = 0; i < 16; i++) {
+            cpu.getMemory()[cpu.getIndex() + i] = i - 5;
+        }
+        cpu.decodeOpcode(0xf555);
+        for (int i = 0; i <= 5; i++) {
+            assertEquals(cpu.getRegisters()[i], cpu.getMemory()[cpu.getIndex() + i]);
+        }
     }
 }
