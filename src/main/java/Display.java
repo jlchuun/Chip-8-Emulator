@@ -52,17 +52,4 @@ public class Display extends JPanel {
             }
         }
     }
-
-    public static void main(String[] args) {
-        Display display = new Display();
-        JFrame frame = new JFrame("CHIP-8 EMULATOR");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.add(display);
-        frame.pack();
-        frame.setVisible(true);
-        for (int i = 0; i < 64 * 15; i++) {
-           display.setPixel(i, 16);
-        }
-    }
-
 }
