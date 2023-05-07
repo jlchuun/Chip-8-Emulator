@@ -1,8 +1,7 @@
 # Chip-8 Emulator
 
 Interpreter for Chip-8 programming language built as an entry into emulator development implemented in Java. 
-Implements most of the features of a Chip-8 virtual machine; the exceptions being working audio 
-and consistent 60hz timers.
+Implements the main features of a Chip-8 virtual machine.
 
 
 ## About Project
@@ -76,6 +75,10 @@ Update ticks per second will vary per ROM for optimal usage.
 
 ```mvn test```
 
+
+## Issues
+- Working audio not implemented
+- Timers based off refresh rate instead of 60Hz
 
 ## Credits
 
